@@ -9,23 +9,74 @@ import(
 	"math"
 )
 
-func combineRunes(a, b rune) int {
-    // Convert runes to integers (assuming they represent digits)
-    intA := int(a - '0')
-    intB := int(b - '0')
+//var result []int
+//var currentWord strings.Builder
 
-    // Count the number of digits in intB
-    digits := 1
-    if intB > 9 {
-        digits = int(math.Log10(float64(intB))) + 1
+func combineIntegers(a int, b int) int {
+    // Count the number of digits in b
+    digits := 0
+    if b > 0 {
+        digits = int(math.Log10(float64(b))) + 1
+    } else if b == 0 {
+        digits = 1
+    } else {
+        // Handle negative b if necessary
     }
 
-    // Combine the integers
-    return intA*int(math.Pow(10, float64(digits))) + intB
+    // Shift a to the left by the number of digits in b and add b
+    return a*int(math.Pow(10, float64(digits))) + b
 }
 
+
+func subStringToIntSlice(input string, numMap map[string]int) []int {
+    result := []int{}
+    currentWord := strings.Builder{}
+
+    for _, char := range input {
+        if unicode.IsLetter(char) {
+            currentWord.WriteRune(char)
+            continue
+        }
+
+        word := currentWord.String()
+        if value, exists := numMap[word]; exists {
+            result = append(result, value)
+        }
+        currentWord.Reset()
+
+        if unicode.IsDigit(char) {
+            result = append(result, int(char-'0'))
+        }
+    }
+
+    // Check if the last word in the string is a number word
+    word := currentWord.String()
+    if value, exists := numMap[word]; exists {
+        result = append(result, value)
+    }
+
+    return result
+}
+
+
+
+
 func main() {
-	file, err := os.Open("Day-1-puzzle.txt")
+	// Create a map with string keys and int values
+	numMap := make(map[string]int)
+
+	numMap["one"] = 1
+	numMap["two"] = 2
+	numMap["three"] = 3
+	numMap["four"] = 4
+	numMap["five"] = 5
+	numMap["six"] = 6
+	numMap["seven"] = 7
+	numMap["eight"] = 8
+	numMap["nine"] = 9
+	numMap["zero"] = 0
+
+	file, err := os.Open("Day-1-Part-2-sample.txt")
 	if err != nil {
 		fmt.Println("Error opening file: ", err)
 		return
@@ -42,30 +93,58 @@ func main() {
 
 	total := 0
 
+	
 	for _, line := range lines {
-		fmt.Println("Line: ", line)
-		characters := []rune(line)
-		start := -1
-		end := -1
+        fmt.Println("Line: ", line)
 
-		for i, char := range characters {
-			if unicode.IsDigit(char) {
-				if start == -1 {
-					start = i
-				}
-				end = i
+        numbers := subStringToIntSlice(line, numMap)
+        fmt.Println(numbers)
+        
+        if len(numbers) > 0 {
+            nums_length := len(numbers)
+            start := numbers[0]
+            end := numbers[nums_length - 1]
+
+            combined_digits := combineIntegers(start, end)
+            total += combined_digits
+
+            fmt.Printf("First Digit %d: \n", start)
+            fmt.Printf("Last Digit %d: \n", end)
+            fmt.Printf("Joined first and last digit: %d\n", combined_digits)
+        } else {
+            fmt.Println("No numbers found in this line.")
+        }
+
+        fmt.Printf("Current total: %d\n", total)
+    }
+	
+
+}
+
+/*
+func subStringToIntSlice(input string, numMap map[string]int) []int {
+	result := []int{}
+	currentWord := strings.Builder{}
+	for _, char := range input {
+		if unicode.IsLetter(char) {
+
+			currentWord.WriteRune(char)
+			word := currentWord.String()
+
+			if value, exists := numMap[word]; exists {
+				result = append(result, value)
+				currentWord.Reset()
 			}
-		}
 
-		combined_digits := combineRunes(characters[start], characters[end])
-		total += combined_digits
+		} else if unicode.IsDigit(char) {
+			result = append(result, int(char - '0'))
+			currentWord.Reset()
 
-		if start != -1 {
-			fmt.Printf("Character at start index (%d): %c\n", start, characters[start])
-            fmt.Printf("Character at end index (%d): %c\n", end, characters[end])
-			fmt.Printf("Joined first and last digit: %d\n", combined_digits)
-			fmt.Printf("Current total: %d\n", total)
+		} else if currentWord.Len() > 0 {
+			currentWord.Reset()
 		}
 	}
 
+	return result
 }
+*/
