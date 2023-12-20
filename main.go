@@ -27,37 +27,74 @@ func combineIntegers(a int, b int) int {
     return a*int(math.Pow(10, float64(digits))) + b
 }
 
-func subStringToIntSlice(input string, numMap map[string]int) []int {
-    result := []int{}
-    currentWord := strings.Builder{}
+func findFirstValue(input string, numMap map[string]int) int {
+    result := -1
 
-    for i := 0; i < len(input); i++ {
-        char := rune(input[i])
+    for i, char := range input {
+
+        //fmt.Println( unicode.IsLetter(char))
         if unicode.IsLetter(char) {
-            currentWord.WriteRune(char)
-            for j := i + 1; j <= len(input); j++ {
-                word := currentWord.String()
-                if value, exists := numMap[word]; exists {
-                    result = append(result, value)
-                    i = j - 1 // Move the outer loop's index past the current word
-                    currentWord.Reset()
-                    break
-                }
-                if j < len(input) && unicode.IsLetter(rune(input[j])) {
-                    currentWord.WriteRune(rune(input[j]))
+
+            endIndex := i + 1
+            startIndex := 0
+            for word := range numMap {
+                new_slice := ""
+                startIndex = endIndex - len(word)
+                if startIndex < 0 {
+                    new_slice = input[0:endIndex]
                 } else {
-                    break
+                    new_slice = input[startIndex:endIndex]
+                }
+                //fmt.Println(new_slice)
+                if value, exists := numMap[new_slice]; exists {
+                    result = value
+                    return result
                 }
             }
-            currentWord.Reset()
+
         } else if unicode.IsDigit(char) {
-            result = append(result, int(char-'0'))
-        }
+            result = int(char - '0') 
+            return result
+        }   
     }
 
     return result
 }
 
+func findLastValue(input string, numMap map[string]int) int {
+    result := -1
+    runes := []rune(input)
+
+    for i := len(runes) - 1; i >= 0; i-- {
+
+        //fmt.Println( unicode.IsLetter(char))
+        if unicode.IsLetter(runes[i]) {
+
+            endIndex := i + 1
+            startIndex := 0
+            for word := range numMap {
+                new_slice := ""
+                startIndex = endIndex - len(word)
+                if startIndex < 0 {
+                    new_slice = input[0:endIndex]
+                } else {
+                    new_slice = input[startIndex:endIndex]
+                }
+                //fmt.Println(new_slice)
+                if value, exists := numMap[new_slice]; exists {
+                    result = value
+                    return result
+                }
+            }
+
+        } else if unicode.IsDigit(runes[i]) {
+            result = int(runes[i] - '0') 
+            return result
+        }   
+    }
+
+    return result
+}
 
 func main() {
 	// Create a map with string keys and int values
@@ -95,13 +132,14 @@ func main() {
 	for _, line := range lines {
         fmt.Println("Line: ", line)
 
-        numbers := subStringToIntSlice(line, numMap)
-        fmt.Println(numbers)
+        start := findFirstValue(line, numMap)
+        end := findLastValue(line, numMap)
+        //fmt.Println(start)
         
-        if len(numbers) > 0 {
-            nums_length := len(numbers)
-            start := numbers[0]
-            end := numbers[nums_length - 1]
+        if start > 0 && end > 0{
+            //nums_length := len(numbers)
+            //start := numbers[0]
+            //end := numbers[nums_length - 1]
 
             combined_digits := combineIntegers(start, end)
             total += combined_digits
@@ -147,5 +185,38 @@ func subStringToIntSlice(input string, numMap map[string]int) []int {
 	}
 
 	return result
+}
+*/
+
+/*
+func subStringToIntSlice(input string, numMap map[string]int) []int {
+    result := []int{}
+    currentWord := strings.Builder{}
+
+    for i := 0; i < len(input); i++ {
+        char := rune(input[i])
+        if unicode.IsLetter(char) {
+            currentWord.WriteRune(char)
+            for j := i + 1; j <= len(input); j++ {
+                word := currentWord.String()
+                if value, exists := numMap[word]; exists {
+                    result = append(result, value)
+                    i = j - 1 // Move the outer loop's index past the current word
+                    currentWord.Reset()
+                    break
+                }
+                if j < len(input) && unicode.IsLetter(rune(input[j])) {
+                    currentWord.WriteRune(rune(input[j]))
+                } else {
+                    break
+                }
+            }
+            currentWord.Reset()
+        } else if unicode.IsDigit(char) {
+            result = append(result, int(char-'0'))
+        }
+    }
+
+    return result
 }
 */
