@@ -27,38 +27,36 @@ func combineIntegers(a int, b int) int {
     return a*int(math.Pow(10, float64(digits))) + b
 }
 
-
 func subStringToIntSlice(input string, numMap map[string]int) []int {
     result := []int{}
     currentWord := strings.Builder{}
 
-    for _, char := range input {
+    for i := 0; i < len(input); i++ {
+        char := rune(input[i])
         if unicode.IsLetter(char) {
             currentWord.WriteRune(char)
-            continue
-        }
-
-        word := currentWord.String()
-        if value, exists := numMap[word]; exists {
-            result = append(result, value)
-        }
-        currentWord.Reset()
-
-        if unicode.IsDigit(char) {
+            for j := i + 1; j <= len(input); j++ {
+                word := currentWord.String()
+                if value, exists := numMap[word]; exists {
+                    result = append(result, value)
+                    i = j - 1 // Move the outer loop's index past the current word
+                    currentWord.Reset()
+                    break
+                }
+                if j < len(input) && unicode.IsLetter(rune(input[j])) {
+                    currentWord.WriteRune(rune(input[j]))
+                } else {
+                    break
+                }
+            }
+            currentWord.Reset()
+        } else if unicode.IsDigit(char) {
             result = append(result, int(char-'0'))
         }
     }
 
-    // Check if the last word in the string is a number word
-    word := currentWord.String()
-    if value, exists := numMap[word]; exists {
-        result = append(result, value)
-    }
-
     return result
 }
-
-
 
 
 func main() {
@@ -76,7 +74,7 @@ func main() {
 	numMap["nine"] = 9
 	numMap["zero"] = 0
 
-	file, err := os.Open("Day-1-Part-2-sample.txt")
+	file, err := os.Open("Day-1-puzzle.txt")
 	if err != nil {
 		fmt.Println("Error opening file: ", err)
 		return
@@ -131,6 +129,7 @@ func subStringToIntSlice(input string, numMap map[string]int) []int {
 			currentWord.WriteRune(char)
 			word := currentWord.String()
 
+
 			if value, exists := numMap[word]; exists {
 				result = append(result, value)
 				currentWord.Reset()
@@ -141,6 +140,8 @@ func subStringToIntSlice(input string, numMap map[string]int) []int {
 			currentWord.Reset()
 
 		} else if currentWord.Len() > 0 {
+            exception := currentWord.String()
+            fmt.Println("Current work if len greater than 0: ", exception)
 			currentWord.Reset()
 		}
 	}
