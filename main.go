@@ -31,6 +31,67 @@ type Game struct {
 	sets []Set
 }
 
+func parseSubset(subsetStr string) (Subset, error) {
+	parts := strings.Fields(subsetStr)
+	if len(parts) != 2 {
+		return Subset{}, fmt.Errorf("invalid format\n")
+	}
+
+	count, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return Subset{}, fmt.Errorf("invalid count")
+	}
+
+	return Subset{color: parts[1], count: count}, nil
+}
+
+func parseSets(gameStr string) ([]Set, error) {
+    sets := []Set{}
+
+    // Find the position of the colon and slice the string from that point
+    colonPos := strings.Index(gameStr, ":")
+    if colonPos == -1 {
+        return nil, fmt.Errorf("invalid game string format")
+    }
+
+    // Split the string into sets at each semicolon
+    setStrs := strings.Split(gameStr[colonPos+1:], ";")
+
+    for _, setStr := range setStrs {
+        currentSet := Set{}
+
+        // Split each set into subsets
+        subsetStrs := strings.Split(setStr, ",")
+        for _, subsetStr := range subsetStrs {
+            subsetStr = strings.TrimSpace(subsetStr)
+            if subsetStr != "" {
+                subset, err := parseSubset(subsetStr)
+                if err != nil {
+                    return nil, fmt.Errorf("error parsing '%s': %v", subsetStr, err)
+                }
+                currentSet.subsets = append(currentSet.subsets, subset)
+            }
+        }
+
+        sets = append(sets, currentSet)
+    }
+
+    return sets, nil
+}
+
+func parseGame(gameStr string) Game {
+	game_id, err := parseGameID(gameStr)
+	if err != nil {
+		fmt.Println("Error parsing game id: ", err)
+	}
+	sets , err := parseSets(gameStr) 
+	if err != nil {
+		fmt.Println("Error parsing game sets: ", err)
+	}
+
+	game := Game{game_id: game_id, sets: sets}
+	return game
+}
 
 func isSubsetPossible(subset Subset) bool {
 	if subset.count > 0 && subset.count <= max_count{
@@ -66,15 +127,15 @@ func isSetPossible(set Set) bool {
 	return true
 }
 
-func isGamePossible(game Game) (bool, int) {
+func isGamePossible(game Game) bool {
 	sets := game.sets
 	for _, set := range sets {
 		if !isSetPossible(set) {
-			return false, 0
+			return false
 		}
 	}
 
-	return true, game.game_id
+	return true
 }
 
 func parseGameID(line string) (int, error) {
@@ -96,23 +157,9 @@ func parseGameID(line string) (int, error) {
 	return game_id, nil
 }
 
-func parseGameSets(line string) []Set {
-	sets := []Subset{}
-	colon := 0
-	runes := []rune(line)
-	for i, rune := range runes {
-		if rune == ':' {
-			colon = i
-		}
-		games_no_id := line[colon + 1:len(line)-1]
-		
-	}
-
-	return sets
-}
 
 func main() {
-	file, err := os.Open("Day-2-sample.txt")
+	file, err := os.Open("Day-2-puzzle.txt")
 	if err != nil {
 		fmt.Println("Error opening file: ", err)
 		return
@@ -126,14 +173,36 @@ func main() {
 	}
 
 	lines := strings.Split(string(content), "\n")
+	//games := []Game{}
+
+	total_games_possible := 0
 
 	for _, line  := range lines {
 		fmt.Println(line)
+		game := parseGame(line)
+		fmt.Printf("Game %d: %+v\n", game.game_id, game.sets)
+		//games = append(games, game)
+
+		if isGamePossible(game) {
+			total_games_possible += game.game_id
+		}
+
+		fmt.Println(total_games_possible)
+
+		/*
 		game_id, err := parseGameID(line) 
 		if err != nil {
 			fmt.Printf("error parsing game ID: %v", err)
 		}
 		fmt.Println(game_id)
+		sets, err := parseSets(line) 
+		if err != nil {
+			fmt.Printf("error parsing subsets: %v", err)
+		}
+		for i, set := range sets {
+			fmt.Printf("Set %d: %+v\n", i+1, set)
+		}
+		*/
 	}
 
 }
