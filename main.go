@@ -11,12 +11,12 @@ import (
 	//"unicode"
 )
 
-
+/*
 const max_green int = 13
 const max_red int = 12
 const max_blue int = 14
 const max_count int = 14
-
+*/
 type Subset struct {
 	color string
 	count int
@@ -93,6 +93,7 @@ func parseGame(gameStr string) Game {
 	return game
 }
 
+/*
 func isSubsetPossible(subset Subset) bool {
 	if subset.count > 0 && subset.count <= max_count{
 		switch i := subset.color; i {
@@ -137,6 +138,7 @@ func isGamePossible(game Game) bool {
 
 	return true
 }
+*/
 
 func parseGameID(line string) (int, error) {
 	end := -1
@@ -158,6 +160,35 @@ func parseGameID(line string) (int, error) {
 }
 
 
+func getMaxColorCounts(game Game) (int, int, int) {
+	max_blue := 0
+	max_green := 0
+	max_red := 0
+
+	sets := game.sets
+	for _, set := range sets {
+		subsets := set.subsets
+		for _, subset := range subsets {
+			switch color := subset.color; color {
+			case "blue":
+				if subset.count > max_blue {
+					max_blue = subset.count
+				}
+			case "green":
+				if subset.count > max_green {
+					max_green = subset.count
+				}
+			case "red":
+				if subset.count > max_red {
+					max_red = subset.count
+				}
+			}
+		}
+	}
+
+	return max_blue, max_green, max_red
+}
+
 func main() {
 	file, err := os.Open("Day-2-puzzle.txt")
 	if err != nil {
@@ -175,7 +206,8 @@ func main() {
 	lines := strings.Split(string(content), "\n")
 	//games := []Game{}
 
-	total_games_possible := 0
+	//total_games_possible := 0
+	total_set_power := 0
 
 	for _, line  := range lines {
 		fmt.Println(line)
@@ -183,13 +215,23 @@ func main() {
 		fmt.Printf("Game %d: %+v\n", game.game_id, game.sets)
 		//games = append(games, game)
 
+		max_blue, max_green, max_red := getMaxColorCounts(game)
+		fmt.Printf("Max Blue: %d, Max Green: %d, Max Red: %d\n", max_blue, max_green, max_red)
+
+		set_power := max_blue * max_green * max_red
+		fmt.Printf("Set Power: %d\n", set_power)
+
+		total_set_power += set_power
+		fmt.Printf("Total Set Power: %d\n", total_set_power)
+
+		/*
 		if isGamePossible(game) {
 			total_games_possible += game.game_id
 		}
 
 		fmt.Println(total_games_possible)
 
-		/*
+		
 		game_id, err := parseGameID(line) 
 		if err != nil {
 			fmt.Printf("error parsing game ID: %v", err)
